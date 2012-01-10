@@ -37,7 +37,7 @@ void Free_Pair(Pair *pair)
 Pair *Make_Pair(void *f, void *s)
 {
 	Pair *result;
-	result = malloc(sizeof(Pair));
+	result = (Pair*)malloc(sizeof(Pair));
 	if(result == NULL)
 		return NULL;
 	result->first = malloc(sizeof(double));
@@ -49,6 +49,19 @@ Pair *Make_Pair(void *f, void *s)
 	}
 	memcpy(result->first,f,sizeof(double));
 	memcpy(result->second,s,sizeof(double));
+	return result;
+}
+DOUBLE Edit_GetDouble(HWND hwnd,UINT uID)
+{
+	HWND child;
+	TCHAR szAnsiBuffer[256];
+	double result;
+	int len;
+
+	child = GetDlgItem(hwnd,uID);
+	len = Edit_GetTextLength(child) + 1;
+	Edit_GetText(child,szAnsiBuffer,len);
+	result = _ttof(szAnsiBuffer);
 	return result;
 }
 
