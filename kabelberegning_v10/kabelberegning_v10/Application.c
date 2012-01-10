@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <float.h>
 #include <string.h>
 #include <tchar.h>
 #include <strsafe.h>
@@ -15,6 +17,8 @@
 #define GREENPEN CreatePen(PS_SOLID,1,RGB(0,255,0))
 #define BLACKPEN CreatePen(PS_SOLID,1,RGB(0,0,0))
 #define WHITEPEN CreatePen(PS_SOLID,1,RGB(255,255,255))
+
+PRIVATE BOOL hasDrawnCoords = FALSE;
 
 
 VOID SetupEditControls(HWND hwnd)
@@ -41,36 +45,42 @@ VOID SetupEditControls(HWND hwnd)
 	Static_SetText(child,szText);
 
 }
-DOUBLE Edit_GetDouble(HWND hwnd,UINT uID)
-{
-	HWND child;
-	TCHAR szAnsiBuffer[256];
-	double result;
-	int len;
 
-	child = GetDlgItem(hwnd,uID);
-	len = Edit_GetTextLength(child) + 1;
-	Edit_GetText(child,szAnsiBuffer,len);
-	result = _ttof(szAnsiBuffer);
-	return result;
-}
-DOUBLE GetMaxPair(Pair *pair1,Pair *pair2)
+
+//////////////////////////////////////////////////////////////////////////
+/// Linked List for the values
+//////////////////////////////////////////////////////////////////////////
+typedef struct ListElmt_
 {
-	double y1,y2;
-	y1 = *(double*)pair1->second;
-	y2 = *(double*)pair2->second;
-	return max(y1,y2);
-}
-DOUBLE GetScale(DOUBLE y, DOUBLE height, DOUBLE pad)
+	void *data;
+	struct ListElmt_ *next;
+}ListElmt;
+
+typedef struct List_
 {
-	return ((height - pad) / y);
-}
-DOUBLE GetIncrement(DOUBLE x,DOUBLE width,DOUBLE pad)
+	int size;
+	int (*match) (const void *key1,const void *key2);
+	void (*destroy)(void*data);
+	ListElmt *head;
+	ListElmt *tail;
+
+}List;
+
+void list_init(List *list, void(*destroy)(void *data))
 {
-	DOUBLE xInc = (width - 2 * pad ) / width;
-	return xInc * x;
+
 }
-PRIVATE BOOL hasDrawnCoords = FALSE;
+
+void list_destroy(List *list)
+{
+
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////// 
+
 
 PRIVATE VOID PlotA(HDC hdc,HPEN colorPen,DOUBLE x1,DOUBLE y1,DOUBLE x2,DOUBLE y2,INT width,INT height,INT pad)
 {
@@ -152,7 +162,18 @@ PRIVATE VOID OnPaint(HWND hwnd)
 	EndPaint (hwnd,&ps);
 }
 
-
+DOUBLE GetDoubleMax(DOUBLE data[],int len)
+{
+	DOUBLE ymin = DBL_MAX;
+	DOUBLE ymax = -DBL_MAX;
+	INT i;
+	for(i = 0; i < len; i++)
+	{
+		if(data[i] > ymax)
+			return data[i];
+	}
+	return ymax;
+}
 
 VOID Setup_List(HWND hwnd)
 {
@@ -164,8 +185,16 @@ VOID Setup_List(HWND hwnd)
 	 */
 	double x1,x2,y1,y2,zfor,resultat;
 	DOUBLE yMax,xMax,yDiff,xDiff,yMin,xMin;
+	DOUBLE yScale,xScale;
+	DOUBLE xP,yP;
 	TCHAR szBuffer[256];
 	HDC hdc;
+	Pair *xPair,*yPair;
+	float xx,*yy;
+	//////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////	
+	//////////////////////////////////////////////////////////////////////////	
+
 	x1 = Edit_GetDouble (hwnd,IDC_EDIT1);
 	y1 = Edit_GetDouble (hwnd,IDC_EDIT2);
 	x2 = Edit_GetDouble (hwnd,IDC_EDIT3);
@@ -174,17 +203,11 @@ VOID Setup_List(HWND hwnd)
 	resultat =  y1 - (y1 - y2) * ((zfor - x1) /( x2 - x1));
 	StringCchPrintf(szBuffer,sizeof(szBuffer) / sizeof(szBuffer[0]),TEXT("%.2f"),resultat);	
 	Edit_SetText(GetDlgItem(hwnd,IDC_EDIT6),szBuffer);
-	/*StringCchPrintf(szBuffer,256,L"%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, ",x1,y1,x2,y2,zfor,resultat);
-	MessageBox(hwnd,szBuffer,L"",MB_OK);*/
-	xMax = max(x1,x2);
-	yMax = max(y1,y2);
-	yMin = min(y1,y2);
-	xMin = min(x1,x2);
-	xDiff = xMax - xMin;
-	yDiff = yMax - yMin;
-	PlotA (GetDC(hwnd),REDPEN,x1,y1,x2,y2,200,200,20);
-	PlotA (GetDC (hwnd),BLUEPEN,zfor,resultat,zfor,resultat-(resultat - yMin),200,200,20);
-	
+	//////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////// 
+
+	printf("%.2f\n",xx);
 }
 BOOL CALLBACK AppDlgProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 {
