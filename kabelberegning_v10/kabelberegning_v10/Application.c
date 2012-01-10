@@ -112,8 +112,7 @@ PRIVATE VOID PaintContent(HWND hwnd,HDC hdc)
 	int tellerX,tellerY;
 	INT yMin,yMax,xMax,xMin;
 	HPEN grayPen = CreatePen(PS_SOLID,1,RGB(128,128,128));
-	HPEN blackPen = CreatePen(PS_SOLID,1,RGB(0,0,0));
-	HPEN redPen = CreatePen(PS_SOLID,1,RGB(255,0,0));
+
 	Rectangle(hdc,offset,offset,width,height);
 	centerX = (width + offset) / 2;
 	centerY = (height + offset) / 2;
@@ -135,16 +134,12 @@ PRIVATE VOID PaintContent(HWND hwnd,HDC hdc)
 		printf("y = %.2f\n",y);
 		y = height + (-1 * y2) + pad;
 		printf("y = %.2f\n",y);
-		SelectPen(hdc,redPen);
 		MoveToEx (hdc,offset,centerY,NULL);
 		LineTo (hdc,width,centerY);
 		MoveToEx (hdc,centerX,offset,NULL);
 		LineTo (hdc,centerX,height);
-		SelectPen(hdc,grayPen);
 	}
-	DeletePen(grayPen);
-	DeletePen(blackPen);
-	DeletePen(redPen);
+	
 }
 PRIVATE VOID OnPaint(HWND hwnd)
 {
@@ -168,7 +163,7 @@ VOID Setup_List(HWND hwnd)
 	 * Y2 = Dårlig længde
 	 */
 	double x1,x2,y1,y2,zfor,resultat;
-	DOUBLE yMax,xMax,yDiff,xDiff;
+	DOUBLE yMax,xMax,yDiff,xDiff,yMin,xMin;
 	TCHAR szBuffer[256];
 	HDC hdc;
 	x1 = Edit_GetDouble (hwnd,IDC_EDIT1);
@@ -179,13 +174,16 @@ VOID Setup_List(HWND hwnd)
 	resultat =  y1 - (y1 - y2) * ((zfor - x1) /( x2 - x1));
 	StringCchPrintf(szBuffer,sizeof(szBuffer) / sizeof(szBuffer[0]),TEXT("%.2f"),resultat);	
 	Edit_SetText(GetDlgItem(hwnd,IDC_EDIT6),szBuffer);
-	StringCchPrintf(szBuffer,256,L"%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, ",x1,y1,x2,y2,zfor,resultat);
-	MessageBox(hwnd,szBuffer,L"",MB_OK);
+	/*StringCchPrintf(szBuffer,256,L"%.2f, %.2f, %.2f, %.2f, %.2f, %.2f, ",x1,y1,x2,y2,zfor,resultat);
+	MessageBox(hwnd,szBuffer,L"",MB_OK);*/
 	xMax = max(x1,x2);
 	yMax = max(y1,y2);
-	yDiff = y
+	yMin = min(y1,y2);
+	xMin = min(x1,x2);
+	xDiff = xMax - xMin;
+	yDiff = yMax - yMin;
 	PlotA (GetDC(hwnd),REDPEN,x1,y1,x2,y2,200,200,20);
-	PlotA (GetDC (hwnd),BLUEPEN,zfor,resultat,zfor,resultat-(resultat-y2),200,200,20);
+	PlotA (GetDC (hwnd),BLUEPEN,zfor,resultat,zfor,resultat-(resultat - yMin),200,200,20);
 	
 }
 BOOL CALLBACK AppDlgProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
