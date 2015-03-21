@@ -1,0 +1,1 @@
+Beregning med kabler.
